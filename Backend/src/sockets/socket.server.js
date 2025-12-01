@@ -13,7 +13,10 @@ function initSocketServer(httpServer) {
     const io = new Server(httpServer, {
         cors: {
             // origin: "*" // This leads to CORS error, browser dosent supports all urls 
-            origin: "http://localhost:5173",
+            origin: [
+                "http://localhost:5173",
+                "https://chat-gpt-lyj2.onrender.com"
+            ],
             allowedHeaders: ["content-Type", "Authorization"],
             credentials: true
         }
