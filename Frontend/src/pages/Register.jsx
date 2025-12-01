@@ -83,13 +83,15 @@ const Register = () => {
     console.log(formData)
     // BACKEND REGISTER API :-
     // ✅ ADDED ERROR HANDLING WITH TOASTIFY
+    // ✅ FIXED - Match the user.model.js structure with fullName object
     axios.post("https://chat-gpt-lyj2.onrender.com/api/auth/register", 
       {
-        firstName: formData.firstName.trim(),
-        lastName: formData.lastName.trim(),
+        fullName: {
+          firstName: formData.firstName.trim(),
+          lastName: formData.lastName.trim(),
+        },
         email: formData.email.trim(),
         password: formData.password,
-        confirm: formData.confirm,
       }, 
       {
         // SENDING COOKIES :-
@@ -100,6 +102,15 @@ const Register = () => {
       console.log(res)
       // ✅ SUCCESS TOAST NOTIFICATION
       toast.success("Registration successful! Redirecting to login...");
+      
+      // ✅ CLEAR FORM DATA
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        password: "",
+        confirm: "",
+      });
       
       setTimeout(() => {
         navigate("/login")
@@ -323,7 +334,6 @@ const Register = () => {
 };
 
 export default Register;
-
 
 
 
