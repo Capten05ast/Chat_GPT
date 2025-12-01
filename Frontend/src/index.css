@@ -1,0 +1,34 @@
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+/* Hide scrollbar but allow scrolling */
+/* This works on all browsers and devices */
+
+/* For Chrome, Safari, Edge */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+  overflow-y: auto;
+}
+
+/* Optional: Add smooth scrolling behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Make sure body and html take full height */
+body, html {
+  height: 100%;
+  width: 100%;
+}
+
