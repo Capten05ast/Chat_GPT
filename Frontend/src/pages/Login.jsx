@@ -8,6 +8,8 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 const Login = () => {
@@ -26,6 +28,7 @@ const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
 
 
+  // THEME INITIALISATION :-
   useEffect(() => {
     const html = document.documentElement;
     html.classList.remove("light", "dark");
@@ -36,6 +39,7 @@ const Login = () => {
   }, [theme]);
 
 
+  // FORM VALIDATION :-
   const validateForm = () => {
     const newErrors = {};
     if (!formData.email) {
@@ -53,14 +57,18 @@ const Login = () => {
   };
 
   
+  // SUBMIT BUTTON :-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      toast.error("Please fix the errors above");
+      return;
+    }
     setIsSubmitting(true);
-
 
     console.log(formData)
     // BACKEND LOGIN API :-
+    // ✅ ADDED ERROR HANDLING WITH TOASTIFY
     axios.post("https://chat-gpt-lyj2.onrender.com/api/auth/login", 
       {
         email: formData.email,
@@ -73,9 +81,35 @@ const Login = () => {
     ).then((res) => {
       // LOG RESOLVED PROMISE :-
       console.log(res)
-      navigate("/")
+      // ✅ SUCCESS TOAST NOTIFICATION
+      toast.success("Login successful! Redirecting...");
+      setSuccess(true);
+      
+      // ✅ STORE TOKEN IF PROVIDED BY BACKEND
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+      
+      setTimeout(() => {
+        navigate("/")
+      }, 1000);
+      
     }).catch((err) => {
       console.log(err)
+      
+      // ✅ ERROR HANDLING WITH SPECIFIC ERROR MESSAGES
+      if (err.response?.status === 400) {
+        toast.error(err.response.data?.message || "Invalid email or password");
+      } else if (err.response?.status === 401) {
+        toast.error("Unauthorized. Check your credentials");
+      } else if (err.response?.status === 404) {
+        toast.error("User not found");
+      } else if (err.request && !err.response) {
+        toast.error("Network error. Check your connection");
+      } else {
+        toast.error(err.response?.data?.message || "Login failed. Try again");
+      }
+      
     }).finally(() => {
       setIsSubmitting(false)
     })
@@ -83,6 +117,7 @@ const Login = () => {
   };
 
 
+  // HANDLE INPUT CHANGE :-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -93,6 +128,20 @@ const Login = () => {
 
   return (
     <div className={theme}>
+      {/* TOAST CONTAINER */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme={theme === "dark" ? "dark" : "light"}
+      />
+
       {/* Theme Toggle */}
       <div className="fixed top-5 right-5 flex gap-2 bg-white/20 dark:bg-slate-900/70 backdrop-blur-md p-2 rounded-2xl border border-cyan-200/40 dark:border-slate-700 shadow-lg">
         <button
@@ -119,16 +168,9 @@ const Login = () => {
         </button>
       </div>
 
-      {/* Success Toast */}
-      {success && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg animate-bounce">
-          ✓ Login successful! Redirecting...
-        </div>
-      )}
-
       {/* Main Container */}
       <div className="min-h-screen bg-gradient-to-br from-slate-500 via-cyan-400 to-slate-500 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center p-6">
-        <div
+        <form
           onSubmit={handleSubmit}
           className="w-full max-w-md bg-white/70 dark:bg-slate-800 rounded-2xl shadow-xl dark:shadow-2xl p-8 border border-cyan-200/50 dark:border-slate-700 backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4 duration-500"
         >
@@ -154,7 +196,8 @@ const Login = () => {
               placeholder="you@example.com"
               value={formData.email}
               onChange={handleChange}
-              className="w-full px-4 py-3 bg-slate-100/80 dark:bg-slate-700 border border-cyan-200/60 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all"
+              disabled={isSubmitting}
+              className="w-full px-4 py-3 bg-slate-100/80 dark:bg-slate-700 border border-cyan-200/60 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all disabled:opacity-50"
             />
             {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
           </div>
@@ -171,12 +214,14 @@ const Login = () => {
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full px-4 py-3 bg-slate-100/80 dark:bg-slate-700 border border-cyan-200/60 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all"
+                disabled={isSubmitting}
+                className="w-full px-4 py-3 bg-slate-100/80 dark:bg-slate-700 border border-cyan-200/60 dark:border-slate-600 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all disabled:opacity-50"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                disabled={isSubmitting}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors disabled:opacity-50"
               >
                 {showPassword ? "👁️" : "👁️‍🗨️"}
               </button>
@@ -191,14 +236,16 @@ const Login = () => {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-4 h-4 bg-slate-100 dark:bg-slate-700 border border-cyan-200/60 dark:border-slate-600 rounded cursor-pointer accent-cyan-500"
+                disabled={isSubmitting}
+                className="w-4 h-4 bg-slate-100 dark:bg-slate-700 border border-cyan-200/60 dark:border-slate-600 rounded cursor-pointer accent-cyan-500 disabled:opacity-50"
               />
               <span className="text-sm text-gray-600 dark:text-gray-400">Remember me</span>
             </label>
             <button
               type="button"
-              onClick={() => alert("Forgot password feature")}
-              className="text-sm text-blue-600 dark:text-purple-400 font-semibold hover:underline"
+              onClick={() => toast.info("Forgot password feature coming soon")}
+              disabled={isSubmitting}
+              className="text-sm text-blue-600 dark:text-purple-400 font-semibold hover:underline disabled:opacity-50"
             >
               Forgot password?
             </button>
@@ -206,7 +253,7 @@ const Login = () => {
 
           {/* Submit Button */}
           <button
-            onClick={handleSubmit}
+            type="submit"
             disabled={isSubmitting}
             className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-purple-600 dark:to-purple-700 dark:hover:from-purple-700 dark:hover:to-purple-800 text-white font-bold py-3 px-4 rounded-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
@@ -214,17 +261,18 @@ const Login = () => {
           </button>
 
           {/* Signup Link */}
-                      <p className="text-center text-sm text-gray-900 dark:text-gray-400 mt-4">
+          <p className="text-center text-sm text-gray-900 dark:text-gray-400 mt-4">
             Don't have an account?{" "}
             <button
               type="button"
               onClick={() => navigate("/register")}
-              className="text-blue-600 dark:text-purple-400 font-semibold hover:underline"
+              disabled={isSubmitting}
+              className="text-blue-600 dark:text-purple-400 font-semibold hover:underline disabled:opacity-50"
             >
               Create one
             </button>
           </p>
-        </div>
+        </form>
       </div>
     </div>
   );

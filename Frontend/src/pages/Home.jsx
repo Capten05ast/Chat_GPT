@@ -5,6 +5,8 @@ import Sidebar from "../components/Sidebar" ;
 import ChatArea from "../components/ChatArea";
 import axios from "axios";
 import { io } from "socket.io-client";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Home = () => {
 
@@ -56,6 +58,24 @@ const Home = () => {
       withCredentials: true,
     })
 
+    // ✅ SOCKET CONNECTION SUCCESS
+    tempSocket.on("connect", () => {
+      console.log("Socket connected");
+      toast.success("Connected to server");
+    });
+
+    // ✅ SOCKET DISCONNECTION
+    tempSocket.on("disconnect", () => {
+      console.log("Socket disconnected");
+      toast.warning("Disconnected from server");
+    });
+
+    // ✅ SOCKET CONNECTION ERROR
+    tempSocket.on("connect_error", (error) => {
+      console.error("Connection error:", error);
+      toast.error("Failed to connect to server");
+    });
+
     // ✅ CORRECT - Handle AI response and add to messages
     tempSocket.on("ai-response", (data) => {
       console.log("Received AI response:", data);
@@ -68,13 +88,14 @@ const Home = () => {
       
       setMessages((prev) => [...prev, aiMessage]);
       setIsLoading(false);
+      toast.success("Response received");
     });
 
-    // Handle errors from backend
+    // ✅ Handle errors from backend
     tempSocket.on("ai-error", (error) => {
       console.error("AI Error:", error.error);
       setIsLoading(false);
-      alert("Error: " + error.error);
+      toast.error("Error: " + error.error);
     });
 
     setSocket(tempSocket)
@@ -114,6 +135,7 @@ const Home = () => {
       // AUTO-CREATE CHAT IF NONE EXIST
       if (formattedChats.length === 0) {
         console.log("No chats found, creating default chat...");
+        toast.info("No chats found, creating one for you");
         await createDefaultChat();
       } else {
         // ✅ SET FIRST CHAT AS ACTIVE BY DEFAULT
@@ -124,6 +146,18 @@ const Home = () => {
       setLoading(false);
     } catch (err) {
       console.error("Chat fetch error:", err);
+      
+      // ✅ ERROR HANDLING WITH TOASTIFY
+      if (err.response?.status === 401) {
+        toast.error("Session expired. Please login again");
+        localStorage.removeItem("token");
+        window.location.href = "/login";
+      } else if (err.request && !err.response) {
+        toast.error("Network error. Check your connection");
+      } else {
+        toast.error("Failed to load chats");
+      }
+      
       setLoading(false);
     }
   };
@@ -136,6 +170,11 @@ const Home = () => {
     try {
       // ✅ AUTO-CREATE without prompting
       const title = window.prompt("Enter title for chat : ");
+
+      if (!title) {
+        toast.warning("Chat title is required");
+        return;
+      }
 
       const response = await axios.post(
         "https://chat-gpt-lyj2.onrender.com/api/chat",
@@ -156,8 +195,18 @@ const Home = () => {
       
       // ✅ NEW CHAT HAS NO MESSAGES YET - Keep empty, don't fetch
       setMessages([]);
+      toast.success("Chat created successfully");
     } catch (err) {
       console.error("Error creating default chat:", err);
+      
+      // ✅ ERROR HANDLING WITH TOASTIFY
+      if (err.response?.status === 401) {
+        toast.error("Session expired. Please login again");
+      } else if (err.request && !err.response) {
+        toast.error("Network error. Check your connection");
+      } else {
+        toast.error("Failed to create chat");
+      }
     }
   };
 
@@ -168,19 +217,24 @@ const Home = () => {
   const handleSendMessage = async (input) => {
     // Validation: Check if chat is active
     if (!activeChat) {
-      alert("Please create or select a chat first");
+      toast.error("Please create or select a chat first");
       return;
     }
 
     // Validation: Check if input is not empty
     if (!input.trim()) {
-      alert("Please enter a message");
+      toast.error("Please enter a message");
       return;
     }
 
     // Validation: Check if socket is connected
     if (!socket) {
-      alert("Connection lost. Please refresh the page");
+      toast.error("Connection lost. Please refresh the page");
+      return;
+    }
+
+    if (!socket.connected) {
+      toast.error("Socket not connected. Reconnecting...");
       return;
     }
 
@@ -195,12 +249,18 @@ const Home = () => {
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
 
-    // Emit message to backend via Socket.IO
-    // ✅ CORRECT - Use "message" not "content"
-    socket.emit("ai-message", {
-      chat: activeChat,
-      message: input
-    });
+    try {
+      // Emit message to backend via Socket.IO
+      // ✅ CORRECT - Use "message" not "content"
+      socket.emit("ai-message", {
+        chat: activeChat,
+        message: input
+      });
+    } catch (err) {
+      console.error("Error sending message:", err);
+      toast.error("Failed to send message");
+      setIsLoading(false);
+    }
 
     // ✅ IMPORTANT: DO NOT add fake AI message here
     // The real AI response will come from the "ai-response" socket event listener in useEffect
@@ -228,6 +288,16 @@ const Home = () => {
       setMessages(formattedMessages);
     } catch (err) {
       console.error("Error fetching messages:", err);
+      
+      // ✅ ERROR HANDLING WITH TOASTIFY
+      if (err.response?.status === 401) {
+        toast.error("Session expired. Please login again");
+      } else if (err.request && !err.response) {
+        toast.error("Network error. Check your connection");
+      } else {
+        toast.error("Failed to load messages");
+      }
+      
       setMessages([]);
     }
   };
@@ -271,9 +341,19 @@ const Home = () => {
         setActiveChat(null);
         setMessages([]);
       }
+
+      toast.success("Chat deleted successfully");
     } catch (err) {
       console.error("Error deleting chat:", err);
-      alert("Failed to delete chat. Please try again.");
+      
+      // ✅ ERROR HANDLING WITH TOASTIFY
+      if (err.response?.status === 401) {
+        toast.error("Session expired. Please login again");
+      } else if (err.request && !err.response) {
+        toast.error("Network error. Check your connection");
+      } else {
+        toast.error("Failed to delete chat");
+      }
     }
   };
 
@@ -285,6 +365,11 @@ const Home = () => {
       // USER PROMPT :-
       // Ask user for chat title
       const title = window.prompt("Enter a title for the new chat:") || "Untitled chat";
+
+      if (!title.trim()) {
+        toast.warning("Chat title is required");
+        return;
+      }
 
       // AXIOS POST REQUEST :-
       // Sends POST request to your backend: POST /api/chat
@@ -317,9 +402,19 @@ const Home = () => {
       // ✅ NEW CHAT HAS NO MESSAGES YET - Keep empty, don't fetch
       setMessages([]);
       setSidebarOpen(false);
+
+      toast.success("New chat created");
     } catch (err) {
       console.error("Error creating chat:", err);
-      alert("Failed to create chat. Please try again.");
+      
+      // ✅ ERROR HANDLING WITH TOASTIFY
+      if (err.response?.status === 401) {
+        toast.error("Session expired. Please login again");
+      } else if (err.request && !err.response) {
+        toast.error("Network error. Check your connection");
+      } else {
+        toast.error("Failed to create chat");
+      }
     }
   };
 
@@ -345,6 +440,20 @@ const Home = () => {
   // RENDERING SIDEBAR (LEFT) & CHATAREA (RIGHT) ON SCREEN :-
   return (
     <div className={theme}>
+      {/* TOAST CONTAINER */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={true}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme={theme === "dark" ? "dark" : "light"}
+      />
+
       {/* 
         MAIN CONTAINER :-
         h-screen = full screen height
@@ -389,59 +498,3 @@ const Home = () => {
 
 export default Home;
 
-
-
-
-/*
-SOCKET.IO CLIENT SIDE SETUP :-
-
-> Socket.io docs
-> Client
-> Installation    > npm > npm install socket.io-client
-
-> Initialisation  > ES modules (because we are using 'import' and not 'require') 
-> Home.jsx > import { io } from "socket.io-client";
-> Home.jsx > const socket = io("https://server-domain.com"); NOT THIS
-           > const ["socket", "setSocket"] = useState(io.("https://chat-gpt-lyj2.onrender.com")) THIS
-
-> CORS : Removing cors error from socket.io backend
-> const io = new Server(httpServer, {
-    cors: {
-      origin: "*",
-      allowedHeaders: ["content-Type", "Authorization"],
-      credentials: true
-    }
-  })
-
-> Socket connection cookies: C <[Object: null prototype] {}> {}
-  This wil be printed after connected to MongoDB, if Socket.io client socket.io backend is conected
-
-> Refer Stack Overflow and Socket.io for some errors like cors
-*/
-
-
-
-
-/*
-POSTMAN & FRONTEND TERMS CONFUSION SOLVED :-
-
-In Postman you were sending:
-json{
-    "chat": "6926d1120877e2c4212e933d",
-    "content": "Paaji"
-}
-
-So messagePayload.content worked fine in Postman testing!
-But in React frontend you were sending:
-
-javascriptsocket.emit("ai-message", {
-  chat: activeChat,
-  content: input  // ❌ Changed to "message" later
-})
-
-Wait, actually you changed it to:
-javascriptsocket.emit("ai-message", {
-  chat: activeChat,
-  message: input  // ✅ Now "message" not "content"
-})
-*/
