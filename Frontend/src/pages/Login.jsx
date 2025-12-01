@@ -61,7 +61,7 @@ const Login = () => {
 
     console.log(formData)
     // BACKEND LOGIN API :-
-    axios.post("https://chat-gpt-1-szav.onrender.com/api/auth/login", 
+    axios.post("https://chat-gpt-lyj2.onrender.com/api/auth/login", 
       {
         email: formData.email,
         password: formData.password

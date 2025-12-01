@@ -82,7 +82,7 @@ const Register = () => {
 
     try {
       // AXIOS :-
-      axios.post("https://chat-gpt-1-szav.onrender.com/api/auth/register",
+      axios.post("https://chat-gpt-lyj2.onrender.com/api/auth/register",
         {
           fullName: {
             firstName: formData.firstName,
