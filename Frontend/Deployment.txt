@@ -13,3 +13,8 @@ Deployment guide :-
 > Start command => node server.js
 > Env variables 
   copy paste you .env file of backend, here
+
+> For changes made in future 
+  > go to events
+  > Manual deploy 
+  > deploy latest 
