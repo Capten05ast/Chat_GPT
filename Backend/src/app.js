@@ -38,7 +38,8 @@ app.use("/api/chat", chatRoutes)
 
 // After deployment scenes :-
 // WILD CARD :-
-app.get("*name", (re, res) => {
+// Wild card handles those apis on our site which we havent created 
+app.get("*name", (req, res) => {
     res.sendFile(path.join(__dirname, `../public/index.html`))
 })
 // index.html in public folder is the main file where our react build worked
