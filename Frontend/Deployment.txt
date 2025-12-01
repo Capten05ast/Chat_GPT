@@ -6,4 +6,10 @@ Deployment guide :-
 > login 
 > Dashboard
 > Click + Add new
-> 
+> Select Web Service
+> root directory => ./Backend
+  Basically our backend code folder
+> Build command => npm i
+> Start command => node server.js
+> Env variables 
+  copy paste you .env file of backend, here
