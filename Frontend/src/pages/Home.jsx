@@ -120,6 +120,7 @@ const Home = () => {
         setActiveChat(formattedChats[0].id);
       }
 
+      
       setLoading(false);
     } catch (err) {
       console.error("Chat fetch error:", err);
