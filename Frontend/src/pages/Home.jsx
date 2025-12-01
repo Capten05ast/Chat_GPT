@@ -283,7 +283,7 @@ const Home = () => {
         id: msg._id,
         text: msg.content,
         sender: msg.role === "user" ? "user" : "ai",
-      }));
+      })).reverse();
       
       setMessages(formattedMessages);
     } catch (err) {
