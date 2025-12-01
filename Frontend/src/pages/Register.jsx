@@ -82,7 +82,7 @@ const Register = () => {
 
     try {
       // AXIOS :-
-      axios.post("http://localhost:3000/api/auth/register",
+      axios.post("https://chat-gpt-1-szav.onrender.com/api/auth/register",
         {
           fullName: {
             firstName: formData.firstName,

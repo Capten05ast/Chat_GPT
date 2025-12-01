@@ -52,7 +52,7 @@ const Home = () => {
 
 
     // SOCKET CONNECTION & FETCHING :-
-    const tempSocket = io("http://localhost:3000", {
+    const tempSocket = io("https://chat-gpt-1-szav.onrender.com", {
       withCredentials: true,
     })
 
@@ -92,7 +92,7 @@ const Home = () => {
       // AXIOS GET REQUEST :-
       // Calls your backend endpoint GET /api/chat
       // withCredentials: true sends JWT token in cookies
-      const res = await axios.get("http://localhost:3000/api/chat", {
+      const res = await axios.get("https://chat-gpt-1-szav.onrender.com/api/chat", {
         withCredentials: true,
       });
 
@@ -137,7 +137,7 @@ const Home = () => {
       const title = window.prompt("Enter title for chat : ");
 
       const response = await axios.post(
-        "http://localhost:3000/api/chat",
+        "https://chat-gpt-1-szav.onrender.com/api/chat",
         { title },
         { withCredentials: true }
       );
@@ -212,7 +212,7 @@ const Home = () => {
   // GET MESSAGES :-
   const getMessages = async (chatId) => {
     try {
-      const response = await axios.get(`http://localhost:3000/api/chat/messages/${chatId}`, { withCredentials: true })
+      const response = await axios.get(`https://chat-gpt-1-szav.onrender.com/api/chat/messages/${chatId}`, { withCredentials: true })
       console.log("Fetched messages : ", response.data.messages)
       
 
@@ -256,7 +256,7 @@ const Home = () => {
       // AXIOS DELETE REQUEST :-
       // Sends DELETE request to your backend: DELETE /api/chat/:chatId
       // withCredentials: true sends JWT token in cookies
-      await axios.delete(`http://localhost:3000/api/chat/${chatId}`, {
+      await axios.delete(`https://chat-gpt-1-szav.onrender.com/api/chat/${chatId}`, {
         withCredentials: true
       });
       console.log("Chat deleted successfully");
@@ -291,7 +291,7 @@ const Home = () => {
       // withCredentials: true sends JWT token in cookies
       // Auth middleware in backend checks if user is logged in before creating chat
       const response = await axios.post(
-        "http://localhost:3000/api/chat",
+        "https://chat-gpt-1-szav.onrender.com/api/chat",
         { title },
         { withCredentials: true }
       );
@@ -401,7 +401,7 @@ SOCKET.IO CLIENT SIDE SETUP :-
 > Initialisation  > ES modules (because we are using 'import' and not 'require') 
 > Home.jsx > import { io } from "socket.io-client";
 > Home.jsx > const socket = io("https://server-domain.com"); NOT THIS
-           > const ["socket", "setSocket"] = useState(io.("http://localhost:3000")) THIS
+           > const ["socket", "setSocket"] = useState(io.("https://chat-gpt-1-szav.onrender.com")) THIS
 
 > CORS : Removing cors error from socket.io backend
 > const io = new Server(httpServer, {

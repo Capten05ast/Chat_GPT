@@ -1,6 +1,6 @@
 
 
-Deployment guide :-
+BACKEND DEPLOYMENT GUIDE :-
 
 > Render
 > login 
@@ -18,3 +18,21 @@ Deployment guide :-
   > go to events
   > Manual deploy 
   > deploy latest 
+
+
+
+
+BACKEND DEPLOYED URL INTEGRATING WITH FRONTEND :-
+> https://chat-gpt-1-szav.onrender.com
+> So we replaced > http://localhost:3000/
+  with           > https://chat-gpt-1-szav.onrender.com
+> To do this click on search option in vs code and simply replace
+> cd frontend > npm run build
+  This command will build 3 files in dist folder (this gets created automatically), which will be used for frontend Deployment
+> Backend folder
+  - create folder public
+  - copy dist folder all files and folders and
+    paste it in public folder of Backend
+  - Basically we are having one single seever for Frontend and Backend
+> Middleware :-
+
